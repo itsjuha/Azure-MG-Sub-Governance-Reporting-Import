@@ -365,7 +365,7 @@ Param
     $Product = 'AzGovViz',
 
     [string]
-    $ProductVersion = '6.4.6',
+    $ProductVersion = '6.4.61',
 
     [string]
     $GithubRepository = 'aka.ms/AzGovViz',
@@ -12995,7 +12995,8 @@ btn_reset: true, highlight_keywords: true, alternate_rows: true, auto_filter: { 
     if (-not $NoScopeInsights) {
         if ($scopescnter % 50 -eq 0) {
             $script:scopescnter = 0
-            Write-Host '   append file duration: '(Measure-Command { $script:html | Add-Content -Path "$($outputPath)$($DirectorySeparatorChar)$($fileName).html" -Encoding utf8 -Force }).TotalSeconds 'seconds'
+            $addContentDurationInSeconds = (Measure-Command { $script:html | Add-Content -Path "$($outputPath)$($DirectorySeparatorChar)$($fileName).html" -Encoding utf8 -Force }).TotalSeconds
+            Write-Host "   append file duration: $addContentDurationInSeconds seconds"
             $script:html = $null
         }
     }
