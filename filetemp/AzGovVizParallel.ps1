@@ -483,7 +483,7 @@ Param
     $DoNotIncludeResourceGroupsAndResourcesOnRBAC,
 
     [Alias('AzureDevOpsWikiHierarchyDirection')]
-    [parameter(ValueFromPipeline)][ValidateSet('TD', 'LR')][string]$MermaidDirection = 'TD',
+    [ValidateSet('TD', 'LR')][string]$MermaidDirection = 'TD',
 
     [int]
     $ChangeTrackingDays = 14,
@@ -28522,10 +28522,7 @@ extensions: [{ name: 'sort' }]
 }
 function removeInvalidFileNameChars {
     param(
-        [Parameter(Mandatory = $true,
-            Position = 0,
-            ValueFromPipeline = $true,
-            ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true)]
         [String]$Name
     )
     if ($Name -like '`[Deprecated`]:*') {
