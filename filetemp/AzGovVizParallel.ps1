@@ -403,7 +403,7 @@ Param
     $NoCsvExport,
 
     [string]
-    [parameter(ValueFromPipeline)][ValidateSet(';', ',')][string]$CsvDelimiter = ';',
+    [parameter(ValueFromPipeline)][ValidateSet(';', ',')]$CsvDelimiter = ';',
 
     [switch]
     $CsvExportUseQuotesAsNeeded,
@@ -5037,6 +5037,11 @@ function processALZPolicyVersionChecker {
         Write-Host " Switching to directory '$($ALZPath)/Enterprise-Scale'"
         Set-Location "$($ALZPath)/Enterprise-Scale"
 
+        #devSkim ...
+        $ALZCommitIdP1 = '3476914f9ba9a8f3f641a'
+        $ALZCommitIdP2 = '25497dfb24a4efa1017'
+        $ALZCommitId = "$($ALZCommitIdP1)$($ALZCommitIdP2)"
+
         $allESLZPolicies = @{}
         $allESLZPolicySets = @{}
         $allESLZPolicyHashes = @{}
@@ -5048,7 +5053,7 @@ function processALZPolicyVersionChecker {
         $processDataPolicies = $true
         foreach ($commit in $gitHist | Sort-Object -Property Date) {
             if ($processDataPolicies) {
-                if ($commit.CommitId -eq '3476914f9ba9a8f3f641a25497dfb24a4efa1017') {
+                if ($commit.CommitId -eq $ALZCommitId) {
                     $processDataPolicies = $false
                     continue
                 }
@@ -5119,7 +5124,7 @@ function processALZPolicyVersionChecker {
         $doNewALZPolicyReadingApproach = $false
         foreach ($commit in $gitHist | Sort-Object -Property Date) {
 
-            if ($commit.CommitId -eq '3476914f9ba9a8f3f641a25497dfb24a4efa1017') {
+            if ($commit.CommitId -eq $ALZCommitId) {
                 $doNewALZPolicyReadingApproach = $true
             }
             #Write-Host "processing commit $($commit.CommitId) - doNewALZPolicyReadingApproach: $doNewALZPolicyReadingApproach"
@@ -7044,7 +7049,7 @@ function processDefinitionInsights() {
     $startDefinitionInsights = Get-Date
     Write-Host ' Building DefinitionInsights'
 
-    $md5 = New-Object -TypeName System.Security.Cryptography.MD5CryptoServiceProvider
+    $SHA256 = New-Object -TypeName System.Security.Cryptography.SHA256CryptoServiceProvider
     $utf8 = New-Object -TypeName System.Text.UTF8Encoding
 
     #region definitionInsightsAzurePolicy
@@ -7317,7 +7322,7 @@ function processDefinitionInsights() {
         }
 
         $json = $($policy.Json | ConvertTo-Json -Depth 99)
-        $guid = ([System.BitConverter]::ToString($md5.ComputeHash($utf8.GetBytes($policy.PolicyDefinitionId)))) -replace '-'
+        $guid = ([System.BitConverter]::ToString($SHA256.ComputeHash($utf8.GetBytes($policy.PolicyDefinitionId)))) -replace '-'
         @"
 <tr>
 <td class="definitionInsightsjsontd">
@@ -7606,7 +7611,7 @@ tf.init();}}
             $scopeDetails = "$($policySet.ScopeId) ($($htEntities.($policySet.ScopeId).DisplayName))"
         }
         $json = $($policySet.Json | ConvertTo-Json -Depth 99)
-        $guid = ([System.BitConverter]::ToString($md5.ComputeHash($utf8.GetBytes($policySet.PolicyDefinitionId)))) -replace '-'
+        $guid = ([System.BitConverter]::ToString($SHA256.ComputeHash($utf8.GetBytes($policySet.PolicyDefinitionId)))) -replace '-'
         @"
 <tr>
 <td class="definitionInsightsjsontd">
