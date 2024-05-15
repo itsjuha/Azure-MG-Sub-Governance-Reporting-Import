@@ -17166,8 +17166,9 @@ extensions: [{ name: 'sort' }]
             $hlp = $htPolicyAssignmentRelatedRoleAssignments.($policyAssignmentAll.PolicyAssignmentId)
             $relatedRoleAssignments = $hlp.relatedRoleAssignments
             $relatedRoleAssignmentsClear = $hlp.relatedRoleAssignmentsClear
-            if ($htManagedIdentityDisplayName.("$($policyAssignmentAll.PolicyAssignmentId -replace '.*/')_$($policyAssignmentAll.PolicyAssignmentId)")) {
-                $hlp = $htManagedIdentityDisplayName.("$($policyAssignmentAll.PolicyAssignmentId -replace '.*/')_$($policyAssignmentAll.PolicyAssignmentId)")
+            $hlperVar = "$($policyAssignmentAll.PolicyAssignmentId -replace '.*/')_$($policyAssignmentAll.PolicyAssignmentId)"
+            if ($htManagedIdentityDisplayName.($hlperVar)) {
+                $hlp = $htManagedIdentityDisplayName.($hlperVar)
                 $policyAssignmentMI = "$($hlp.displayname) (SPObjId: $($hlp.id))"
             }
         }
