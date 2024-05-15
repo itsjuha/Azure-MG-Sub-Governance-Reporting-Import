@@ -3390,11 +3390,12 @@ function getEntities {
 
             $array = $entity.properties.parentNameChain
             $array += $entity.name
+
             $script:htSubscriptionsMgPath.($entity.name) = @{
                 ParentNameChain          = $entity.properties.parentNameChain
                 ParentNameChainDelimited = $entity.properties.parentNameChain -join '/'
-                Parent                   = $entity.properties.parent.Id -replace '.*/'
-                ParentName               = $htEntitiesPlain.($entity.properties.parent.Id -replace '.*/').properties.displayName
+                Parent                   = $parent
+                ParentName               = $htEntitiesPlain.($parent).properties.displayName
                 DisplayName              = $entity.properties.displayName
                 path                     = $array
                 pathDelimited            = $array -join '/'
@@ -4194,15 +4195,16 @@ function getPIMEligible {
         if (-not $PIMEligibilityIgnoreScope) {
             if (($azAPICallConf['checkContext']).Tenant.Id -ne $ManagementGroupId) {
                 foreach ($entry in $res) {
+                    $entryIdGuid = $entry.externalId -replace '.*/'
                     if ($entry.type -eq 'managementGroup') {
-                        if ($htManagementGroupsMgPath.($ManagementGroupId).ParentNameChain -contains ($entry.externalId -replace '.*/') -or $htManagementGroupsMgPath.($entry.externalId -replace '.*/').path -contains $ManagementGroupId) {
+                        if ($htManagementGroupsMgPath.($ManagementGroupId).ParentNameChain -contains ($entryIdGuid) -or $htManagementGroupsMgPath.($entryIdGuid).path -contains $ManagementGroupId) {
                             $null = $scopesToIterate.Add($entry)
                         }
                     }
                     if ($entry.type -eq 'subscription') {
-                        if ($htSubscriptionsMgPath.($entry.externalId -replace '.*/').ParentNameChain -contains $ManagementGroupId) {
-                            if ($htOutOfScopeSubscriptions.($entry.externalId -replace '.*/')) {
-                                Write-Host "excluding subscription $($entry.externalId -replace '.*/') (outOfScopeSubscription -> $($htOutOfScopeSubscriptions.($entry.externalId -replace '.*/').outOfScopeReason)) (`$PIMEligibilityIgnoreScope=$PIMEligibilityIgnoreScope)"
+                        if ($htSubscriptionsMgPath.($entryIdGuid).ParentNameChain -contains $ManagementGroupId) {
+                            if ($htOutOfScopeSubscriptions.($entryIdGuid)) {
+                                Write-Host "excluding subscription $($entryIdGuid) (outOfScopeSubscription -> $($htOutOfScopeSubscriptions.($entryIdGuid).outOfScopeReason)) (`$PIMEligibilityIgnoreScope=$PIMEligibilityIgnoreScope)"
                             }
                             else {
                                 $null = $scopesToIterate.Add($entry)
@@ -4213,8 +4215,9 @@ function getPIMEligible {
             }
             else {
                 foreach ($entry in $res) {
-                    if ($htOutOfScopeSubscriptions.($entry.externalId -replace '.*/')) {
-                        Write-Host "excluding subscription $($entry.externalId -replace '.*/') (outOfScopeSubscription -> $($htOutOfScopeSubscriptions.($entry.externalId -replace '.*/').outOfScopeReason)) (`$PIMEligibilityIgnoreScope=$PIMEligibilityIgnoreScope)"
+                    $entryIdGuid = $entry.externalId -replace '.*/'
+                    if ($htOutOfScopeSubscriptions.($entryIdGuid)) {
+                        Write-Host "excluding subscription $($entryIdGuid) (outOfScopeSubscription -> $($htOutOfScopeSubscriptions.($entryIdGuid).outOfScopeReason)) (`$PIMEligibilityIgnoreScope=$PIMEligibilityIgnoreScope)"
                     }
                     else {
                         $null = $scopesToIterate.Add($entry)
@@ -11363,7 +11366,8 @@ paging: {results_per_page: ['Records: ', [$spectrum]]},/*state: {types: ['local_
 
                 $allPSRuleResultsUnderThisMg = [system.collections.ArrayList]@()
                 foreach ($mg in $grpPSRuleManagementGroups) {
-                    if ($htManagementGroupsMgPath.($mg.name -replace '.*/').path -contains $mgchild) {
+                    $mgNameIdHlper = $mg.name -replace '.*/'
+                    if ($htManagementGroupsMgPath.($mgNameIdHlper).path -contains $mgchild) {
                         $allPSRuleResultsUnderThisMg.AddRange($mg.Group)
                     }
                 }
@@ -28523,8 +28527,10 @@ extensions: [{ name: 'sort' }]
 function removeInvalidFileNameChars {
     param(
         [Parameter(Mandatory = $true)]
-        [String]$Name
+        [string]
+        $Name
     )
+
     if ($Name -like '`[Deprecated`]:*') {
         $Name = $Name -replace '\[Deprecated\]\:', '[Deprecated]'
     }
@@ -28534,6 +28540,7 @@ function removeInvalidFileNameChars {
     if ($Name -like '`[ASC Private Preview`]:*') {
         $Name = $Name -replace '\[ASC Private Preview\]\:', '[ASC Private Preview]'
     }
+
     return ($Name -replace ':', '_' -replace '/', '_' -replace '\\', '_' -replace '<', '_' -replace '>', '_' -replace '\*', '_' -replace '\?', '_' -replace '\|', '_' -replace '"', '_')
 }
 function ResolveObjectIds {
