@@ -14321,16 +14321,17 @@ function processTenantSummary() {
         if (($tenantPolicy.RoleDefinitionIds) -ne 'n/a') {
             $policyRoleDefinitionsArray = @()
             $policyRoleDefinitionsArray = foreach ($roleDefinitionId in $tenantPolicy.RoleDefinitionIds | Sort-Object) {
-                if (($htCacheDefinitionsRole).($roleDefinitionId -replace '.*/').LinkToAzAdvertizer) {
-                    ($htCacheDefinitionsRole).($roleDefinitionId -replace '.*/').LinkToAzAdvertizer
+                $roleDefinitionIdGuid = $roledefinitionId -replace '.*/'
+                if (($htCacheDefinitionsRole).($roleDefinitionIdGuid).LinkToAzAdvertizer) {
+                    ($htCacheDefinitionsRole).($roleDefinitionIdGuid).LinkToAzAdvertizer
                 }
                 else {
-                    ($htCacheDefinitionsRole).($roleDefinitionId -replace '.*/').Name -replace '<', '&lt;' -replace '>', '&gt;'
+                    ($htCacheDefinitionsRole).($roleDefinitionIdGuid).Name -replace '<', '&lt;' -replace '>', '&gt;'
                 }
             }
             $policyRoleDefinitionsClearArray = @()
             $policyRoleDefinitionsClearArray = foreach ($roleDefinitionId in $tenantPolicy.RoleDefinitionIds | Sort-Object) {
-                ($htCacheDefinitionsRole).($roleDefinitionId -replace '.*/').Name
+                ($htCacheDefinitionsRole).($roleDefinitionIdGuid).Name
             }
             $policyRoleDefinitions = $policyRoleDefinitionsArray -join "$CsvDelimiterOpposite "
             $policyRoleDefinitionsClear = $policyRoleDefinitionsClearArray -join "$CsvDelimiterOpposite "
@@ -24395,8 +24396,9 @@ extensions: [{ name: 'sort' }]
 
                                 $roleDefinitionIdsArray = [System.Collections.ArrayList]@()
                                 foreach ($roleDefinitionId in ($policy).Json.properties.policyrule.then.details.roleDefinitionIds) {
-                                    if (($htCacheDefinitionsRole).($roleDefinitionId -replace '.*/')) {
-                                        $null = $roleDefinitionIdsArray.Add("<b>$(($htCacheDefinitionsRole).($roleDefinitionId -replace '.*/').Name)</b> ($($roleDefinitionId -replace '.*/'))")
+                                    $roleDefinitionIdGuid = $roleDefinitionId -replace '.*/'
+                                    if (($htCacheDefinitionsRole).($roleDefinitionIdGuid)) {
+                                        $null = $roleDefinitionIdsArray.Add("<b>$(($htCacheDefinitionsRole).($roleDefinitionIdGuid).Name)</b> ($($roleDefinitionIdGuid))")
                                     }
                                     else {
                                         Write-Host "  DiagnosticsLifeCycle: unknown RoleDefinition '$roleDefinitionId'"
@@ -35063,15 +35065,16 @@ if (-not $HierarchyMapOnly) {
         if (-not [string]::IsNullOrWhiteSpace($htCacheDefinitionsPolicy.($policyDefinitionId).Json.properties.policyRule.then.details.roleDefinitionIds)) {
             foreach ($roledefinitionId in $htCacheDefinitionsPolicy.($policyDefinitionId).Json.properties.policyRule.then.details.roleDefinitionIds) {
                 if (-not [string]::IsNullOrWhitespace($roledefinitionId)) {
-                    if (-not $htCacheDefinitionsRole.($roledefinitionId -replace '.*/')) {
+                    $roleDefinitionIdGuid = $roledefinitionId -replace '.*/'
+                    if (-not $htCacheDefinitionsRole.($roleDefinitionIdGuid)) {
                         Write-Host "Finding: policyDefinitionId '$($policyDefinitionId)' has unknown roleDefinitionId '$roledefinitionId' in policyRule.then.details.roleDefinitionIds" -ForegroundColor DarkRed
                     }
                     else {
-                        if (-not $htRoleDefinitionIdsUsedInPolicy.($roledefinitionId -replace '.*/')) {
-                            $htRoleDefinitionIdsUsedInPolicy.($roledefinitionId -replace '.*/') = [System.Collections.ArrayList]@()
+                        if (-not $htRoleDefinitionIdsUsedInPolicy.($roleDefinitionIdGuid)) {
+                            $htRoleDefinitionIdsUsedInPolicy.($roleDefinitionIdGuid) = [System.Collections.ArrayList]@()
                         }
                         try {
-                            $null = $htRoleDefinitionIdsUsedInPolicy.($roledefinitionId -replace '.*/').Add($policyDefinitionId)
+                            $null = $htRoleDefinitionIdsUsedInPolicy.($roleDefinitionIdGuid).Add($policyDefinitionId)
                         }
                         catch {
                             Write-Host "policyDefinitionId '$($policyDefinitionId)' JSON:"
