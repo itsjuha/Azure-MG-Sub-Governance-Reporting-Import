@@ -365,7 +365,7 @@ Param
     $Product = 'AzGovViz',
 
     [string]
-    $ProductVersion = '6.4.5',
+    $ProductVersion = '6.4.6',
 
     [string]
     $GithubRepository = 'aka.ms/AzGovViz',
@@ -4233,7 +4233,7 @@ function getPIMEligible {
             Write-Host " Found $($entry.Count) PIM onboarded $($entry.Name)s"
         }
 
-        $htPIMEligibleDirect = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
+        $htPIMEligibleDirect = [System.Collections.Hashtable]::Synchronized(@{})
         $relevantSubscriptionIds = $subsToProcessInCustomDataCollection.subscriptionId
 
         if ($scopesToIterate.Count -gt 0) {
@@ -4609,9 +4609,9 @@ function getResourceDiagnosticsCapability {
         Write-Host " GroupResourceIdsByType processing duration: $((New-TimeSpan -Start $startGroupResourceIdsByType -End $endGroupResourceIdsByType).TotalSeconds) seconds)"
         $resourceTypesUniqueCount = ($resourceTypesUnique | Measure-Object).count
         Write-Host " $($resourceTypesUniqueCount) unique Resource Types"
-        $script:resourceTypesSummarizedArray = [System.Collections.ArrayList]::Synchronized(@{})
+        $script:resourceTypesSummarizedArray = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
 
-        $script:resourceTypesDiagnosticsArray = [System.Collections.ArrayList]::Synchronized(@{})
+        $script:resourceTypesDiagnosticsArray = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
         $microsoftResourceTypes = $resourceTypesUnique.where({ $_.Name.StartsWith('microsoft') })
         if ($microsoftResourceTypes.Count -gt 0) {
             $microsoftResourceTypes | ForEach-Object -Parallel {
@@ -5575,7 +5575,7 @@ function processApplications {
     if (-not $skipApplications) {
         $startSPApp = Get-Date
         $currentDateUTC = (Get-Date).ToUniversalTime()
-        $script:arrayApplicationRequestResourceNotFound = [System.Collections.ArrayList]::Synchronized(@{})
+        $script:arrayApplicationRequestResourceNotFound = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
 
         $ThrottleLimitThis = $ThrottleLimit * 2
         $batchSize = [math]::ceiling($servicePrincipalsOfTypeApplication.Count / $ThrottleLimitThis)
@@ -29735,7 +29735,7 @@ function validateLeastPrivilegeForUser {
             $currentTask = "Get RBAC Role definition '$nonReaderRoleAssigned'"
             $uri = "$($azAPICallConf['azAPIEndpointUrls'].ARM)$($nonReaderRoleAssigned)?api-version=2022-04-01"
             $method = 'GET'
-            $getRole = AzAPICall -AzAPICallConfiguration $azapicallConf -uri $uri -listenOn Content
+            $getRole = AzAPICall -AzAPICallConfiguration $azapicallConf -uri $uri -method $method -listenOn Content
 
             if ($getRole.properties.roleName -eq 'owner' -or $getRole.properties.roleName -eq 'contributor') {
                 Write-Host " - $($getRole.properties.roleName) ($($getRole.properties.type)) !!!"
@@ -30400,7 +30400,7 @@ function dataCollectionResources {
 
     #region resources GET
     if ($resourcesSubscriptionResult.Count -gt 0) {
-        $arrayResourcesWithProperties = [System.Collections.ArrayList]::Synchronized(@{})
+        $arrayResourcesWithProperties = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
 
         $batchSize = [math]::ceiling($resourcesSubscriptionResult.Count / $azAPICallConf['htParameters'].ThrottleLimit)
         #Write-Host "Optimal batch size: $($batchSize)"
@@ -34619,29 +34619,29 @@ getFileNaming
 
 Write-Host "Running Azure Governance Visualizer ($ProductVersion) for ManagementGroupId: '$ManagementGroupId'" -ForegroundColor Yellow
 
-$newTable = [System.Collections.ArrayList]::Synchronized(@{})
+$newTable = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
 $htMgDetails = @{}
 $htSubDetails = @{}
 
 if (-not $HierarchyMapOnly) {
     #helper ht / collect results /save some time
-    $htCacheDefinitionsPolicy = [System.Collections.ArrayList]::Synchronized(@{}) #@{} #[System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htCacheDefinitionsPolicySet = [System.Collections.ArrayList]::Synchronized(@{}) #@{} #[System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htCacheDefinitionsRole = [System.Collections.ArrayList]::Synchronized(@{}) #@{} #[System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htCacheDefinitionsBlueprint = [System.Collections.ArrayList]::Synchronized(@{}) #@{} #[System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htRoleAssignmentsPIM = [System.Collections.ArrayList]::Synchronized(@{}) #@{} #[System.Collections.ArrayList]::Synchronized(@{}) #@{}
+    $htCacheDefinitionsPolicy = [System.Collections.Hashtable]::Synchronized(@{})
+    $htCacheDefinitionsPolicySet = [System.Collections.Hashtable]::Synchronized(@{})
+    $htCacheDefinitionsRole = [System.Collections.Hashtable]::Synchronized(@{})
+    $htCacheDefinitionsBlueprint = [System.Collections.Hashtable]::Synchronized(@{})
+    $htRoleAssignmentsPIM = [System.Collections.Hashtable]::Synchronized(@{})
     $htPoliciesUsedInPolicySets = @{}
-    $htSubscriptionTags = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htCacheAssignmentsPolicyOnResourceGroupsAndResources = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htCacheAssignmentsRole = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htCacheAssignmentsRBACOnResourceGroupsAndResources = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htCacheAssignmentsBlueprint = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htCacheAssignmentsPolicy = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htCachePolicyComplianceMG = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htCachePolicyComplianceSUB = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htCachePolicyComplianceResponseTooLargeMG = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htCachePolicyComplianceResponseTooLargeSUB = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $outOfScopeSubscriptions = [System.Collections.ArrayList]::Synchronized(@{})
+    $htSubscriptionTags = [System.Collections.Hashtable]::Synchronized(@{})
+    $htCacheAssignmentsPolicyOnResourceGroupsAndResources = [System.Collections.Hashtable]::Synchronized(@{})
+    $htCacheAssignmentsRole = [System.Collections.Hashtable]::Synchronized(@{})
+    $htCacheAssignmentsRBACOnResourceGroupsAndResources = [System.Collections.Hashtable]::Synchronized(@{})
+    $htCacheAssignmentsBlueprint = [System.Collections.Hashtable]::Synchronized(@{})
+    $htCacheAssignmentsPolicy = [System.Collections.Hashtable]::Synchronized(@{})
+    $htCachePolicyComplianceMG = [System.Collections.Hashtable]::Synchronized(@{})
+    $htCachePolicyComplianceSUB = [System.Collections.Hashtable]::Synchronized(@{})
+    $htCachePolicyComplianceResponseTooLargeMG = [System.Collections.Hashtable]::Synchronized(@{})
+    $htCachePolicyComplianceResponseTooLargeSUB = [System.Collections.Hashtable]::Synchronized(@{})
+    $outOfScopeSubscriptions = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
     $htOutOfScopeSubscriptions = @{}
     if ($azAPICallConf['htParameters'].DoAzureConsumption -eq $true) {
         $htManagementGroupsCost = @{}
@@ -34655,93 +34655,92 @@ if (-not $HierarchyMapOnly) {
             $azureConsumptionEndDate = ((Get-Date).AddDays( - $((Get-Date).Day))).ToString('yyyy-MM-dd')
         }
     }
-    $customDataCollectionDuration = [System.Collections.ArrayList]::Synchronized(@{})
-    $htResourceLocks = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htAllTagList = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htAllTagList.AllScopes = @{} #[System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htAllTagList.Subscription = @{} #[System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htAllTagList.ResourceGroup = @{} #[System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htAllTagList.Resource = @{} #[System.Collections.ArrayList]::Synchronized(@{}) #@{}
+    $customDataCollectionDuration = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
+    $htResourceLocks = [System.Collections.Hashtable]::Synchronized(@{})
+    $htAllTagList = [System.Collections.Hashtable]::Synchronized(@{})
+    $htAllTagList.AllScopes = @{}
+    $htAllTagList.Subscription = @{}
+    $htAllTagList.ResourceGroup = @{}
+    $htAllTagList.Resource = @{}
     $arrayTagList = [System.Collections.ArrayList]@()
-    $htSubscriptionTagList = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htPolicyAssignmentExemptions = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htUserTypesGuest = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $resourcesAll = [System.Collections.ArrayList]::Synchronized(@{})
-    $resourcesIdsAll = [System.Collections.ArrayList]::Synchronized(@{})
-    $resourceGroupsAll = [System.Collections.ArrayList]::Synchronized(@{})
-    $htResourceProvidersAll = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $arrayFeaturesAll = [System.Collections.ArrayList]::Synchronized(@{})
-    $htResourceTypesUniqueResource = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $arrayDataCollectionProgressMg = [System.Collections.ArrayList]::Synchronized(@{})
-    $arrayDataCollectionProgressSub = [System.Collections.ArrayList]::Synchronized(@{})
-    $arraySubResourcesAddArrayDuration = [System.Collections.ArrayList]::Synchronized(@{})
-    $arrayDiagnosticSettingsMgSub = [System.Collections.ArrayList]::Synchronized(@{})
+    $htSubscriptionTagList = [System.Collections.Hashtable]::Synchronized(@{})
+    $htPolicyAssignmentExemptions = [System.Collections.Hashtable]::Synchronized(@{})
+    $htUserTypesGuest = [System.Collections.Hashtable]::Synchronized(@{})
+    $resourcesAll = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
+    $resourcesIdsAll = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
+    $resourceGroupsAll = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
+    $htResourceProvidersAll = [System.Collections.Hashtable]::Synchronized(@{})
+    $arrayFeaturesAll = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
+    $htResourceTypesUniqueResource = [System.Collections.Hashtable]::Synchronized(@{})
+    $arrayDataCollectionProgressMg = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
+    $arrayDataCollectionProgressSub = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
+    $arraySubResourcesAddArrayDuration = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
+    $arrayDiagnosticSettingsMgSub = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
     $htDiagnosticSettingsMgSub = @{}
     $htDiagnosticSettingsMgSub.mg = @{}
     $htDiagnosticSettingsMgSub.sub = @{}
-    $htMgAtScopePolicyAssignments = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htMgAtScopePoliciesScoped = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htMgAtScopeRoleAssignments = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
+    $htMgAtScopePolicyAssignments = [System.Collections.Hashtable]::Synchronized(@{})
+    $htMgAtScopePoliciesScoped = [System.Collections.Hashtable]::Synchronized(@{})
+    $htMgAtScopeRoleAssignments = [System.Collections.Hashtable]::Synchronized(@{})
     $htMgASCSecureScore = @{}
-    $htConsumptionExceptionLog = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htConsumptionExceptionLog.Mg = @{} #[System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htConsumptionExceptionLog.Sub = @{} #[System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htRoleAssignmentsFromAPIInheritancePrevention = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htNamingValidation = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htNamingValidation.PolicyAssignment = @{} #[System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htNamingValidation.Policy = @{} #[System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htNamingValidation.PolicySet = @{} #[System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htNamingValidation.Role = @{} #[System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htNamingValidation.Subscription = @{} #[System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htNamingValidation.ManagementGroup = @{} #[System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htPrincipals = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $htServicePrincipals = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
+    $htConsumptionExceptionLog = [System.Collections.Hashtable]::Synchronized(@{})
+    $htConsumptionExceptionLog.Mg = @{}
+    $htConsumptionExceptionLog.Sub = @{}
+    $htRoleAssignmentsFromAPIInheritancePrevention = [System.Collections.Hashtable]::Synchronized(@{})
+    $htNamingValidation = [System.Collections.Hashtable]::Synchronized(@{})
+    $htNamingValidation.PolicyAssignment = @{}
+    $htNamingValidation.Policy = @{}
+    $htNamingValidation.PolicySet = @{}
+    $htNamingValidation.Role = @{}
+    $htNamingValidation.Subscription = @{}
+    $htNamingValidation.ManagementGroup = @{}
+    $htPrincipals = [System.Collections.Hashtable]::Synchronized(@{})
+    $htServicePrincipals = [System.Collections.Hashtable]::Synchronized(@{})
     $htDailySummary = @{}
-    $arrayDefenderPlans = [System.Collections.ArrayList]::Synchronized(@{})
-    $arrayDefenderPlansSubscriptionsSkipped = [System.Collections.ArrayList]::Synchronized(@{})
-    $arrayUserAssignedIdentities4Resources = [System.Collections.ArrayList]::Synchronized(@{})
-    $htSubscriptionsRoleAssignmentLimit = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
+    $arrayDefenderPlans = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
+    $arrayDefenderPlansSubscriptionsSkipped = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
+    $arrayUserAssignedIdentities4Resources = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
+    $htSubscriptionsRoleAssignmentLimit = [System.Collections.Hashtable]::Synchronized(@{})
     if ($azAPICallConf['htParameters'].NoMDfCSecureScore -eq $false) {
         $htMgASCSecureScore = @{}
     }
     $htManagedIdentityForPolicyAssignment = @{}
     $htPolicyAssignmentManagedIdentity = @{}
     $htManagedIdentityDisplayName = @{}
-    $htAppDetails = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
+    $htAppDetails = [System.Collections.Hashtable]::Synchronized(@{})
     if (-not $NoAADGroupsResolveMembers) {
-        $htAADGroupsDetails = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-        $htAADGroupsExeedingMemberLimit = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-        $arrayGroupRoleAssignmentsOnServicePrincipals = [System.Collections.ArrayList]::Synchronized(@{})
-        $arrayGroupRequestResourceNotFound = [System.Collections.ArrayList]::Synchronized(@{})
-        $arrayProgressedAADGroups = [System.Collections.ArrayList]::Synchronized(@{})
+        $htAADGroupsDetails = [System.Collections.Hashtable]::Synchronized(@{})
+        $htAADGroupsExeedingMemberLimit = [System.Collections.Hashtable]::Synchronized(@{})
+        $arrayGroupRoleAssignmentsOnServicePrincipals = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
+        $arrayGroupRequestResourceNotFound = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
+        $arrayProgressedAADGroups = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
     }
     if ($DoAzureConsumption) {
-        $allConsumptionData = [System.Collections.ArrayList]::Synchronized(@{})
+        $allConsumptionData = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
     }
-    $arrayPsRule = [System.Collections.ArrayList]::Synchronized(@{})
-    $arrayPSRuleTracking = [System.Collections.ArrayList]::Synchronized(@{})
-    $htClassicAdministrators = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $arrayOrphanedResources = [System.Collections.ArrayList]::Synchronized(@{})
-    $arrayPIMEligible = [System.Collections.ArrayList]::Synchronized(@{})
+    $arrayPsRule = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
+    $arrayPSRuleTracking = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
+    $htClassicAdministrators = [System.Collections.Hashtable]::Synchronized(@{})
+    $arrayOrphanedResources = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
+    $arrayPIMEligible = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
     $alzPolicies = @{}
     $alzPolicySets = @{}
     $alzPolicyHashes = @{}
     $alzPolicySetHashes = @{}
-    $htDoARMRoleAssignmentScheduleInstances = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
+    $htDoARMRoleAssignmentScheduleInstances = [System.Collections.Hashtable]::Synchronized(@{})
     $htDoARMRoleAssignmentScheduleInstances.Do = $true
-    $storageAccounts = [System.Collections.ArrayList]::Synchronized(@{})
-    $arrayStorageAccountAnalysisResults = [System.Collections.ArrayList]::Synchronized(@{})
-    $htDefenderEmailContacts = [System.Collections.ArrayList]::Synchronized(@{})
-    $arrayVNets = [System.Collections.ArrayList]::Synchronized(@{})
-    $arrayPrivateEndPoints = [System.Collections.ArrayList]::Synchronized(@{})
-    $arrayPrivateEndPointsFromResourceProperties = [System.Collections.ArrayList]::Synchronized(@{})
+    $storageAccounts = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
+    $arrayStorageAccountAnalysisResults = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
+    $htDefenderEmailContacts = [System.Collections.Hashtable]::Synchronized(@{})
+    $arrayVNets = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
+    $arrayPrivateEndPoints = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
+    $arrayPrivateEndPointsFromResourceProperties = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
     $htUnknownTenantsForSubscription = @{}
-    $htResourcePropertiesConvertfromJSONFailed = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    #$htResourcesWithProperties = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
+    $htResourcePropertiesConvertfromJSONFailed = [System.Collections.Hashtable]::Synchronized(@{})
     $htResourceProvidersRef = @{}
-    $htAvailablePrivateEndpointTypes = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
-    $arrayAdvisorScores = [System.Collections.ArrayList]::Synchronized(@{})
-    $htHashesBuiltInPolicy = [System.Collections.ArrayList]::Synchronized(@{}) #@{}
+    $htAvailablePrivateEndpointTypes = [System.Collections.Hashtable]::Synchronized(@{})
+    $arrayAdvisorScores = [System.Collections.ArrayList]::Synchronized((New-Object System.Collections.ArrayList))
+    $htHashesBuiltInPolicy = [System.Collections.Hashtable]::Synchronized(@{})
     $arrayCustomBuiltInPolicyParity = [System.Collections.ArrayList]@()
     $arrayRemediatable = [System.Collections.ArrayList]@()
 }
