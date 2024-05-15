@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     This script creates the following files to help better understand and audit your governance setup
     csv file
