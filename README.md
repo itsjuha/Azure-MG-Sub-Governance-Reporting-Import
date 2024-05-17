@@ -1,3 +1,5 @@
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/itsjuha/Azure-MG-Sub-Governance-Reporting-Import/badge)](https://scorecard.dev/viewer/?uri=github.com/itsjuha/Azure-MG-Sub-Governance-Reporting-Import)
+
 # Azure Governance Visualizer aka AzGovViz
 
 _Do you want to get granular insights on your technical Azure Governance implementation and document it in CSV, HTML, Markdown, and JSON?_
