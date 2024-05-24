@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    This script creates the following files to help better understand and audit your governance setup
+    xThis script creates the following files to help better understand and audit your governance setup
     csv file
         Management Groups, Subscriptions, Policy, PolicySet (Initiative), RBAC
     html file
