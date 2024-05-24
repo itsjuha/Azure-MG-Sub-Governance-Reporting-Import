@@ -19,6 +19,7 @@ permissions: read-all
 
 jobs:
   analysis:
+    if: github.repository == 'JulianHayward/Azure-MG-Sub-Governance-Reporting'
     name: Scorecard analysis
     runs-on: ubuntu-latest
     permissions:
